@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model groups {
+  id          Int           @id(map: "groups_pk") @default(autoincrement())
+  name        String        @db.VarChar(255)
+  created_at  DateTime?     @default(now()) @db.Timestamp(6)
+  status      status?       @default(NOT_EMPTY)
+  user_groups user_groups[]
+}
+
+model user_groups {
+  user_id  Int
+  group_id Int
+  groups   groups @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_groups_groups_id_fk")
+  users    users  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_groups_users_id_fk")
+
+  @@id([user_id, group_id], map: "user_groups_pk")
+}
+
+model users {
+  id          Int           @id @default(autoincrement())
+  name        String        @db.VarChar(255)
+  email       String        @db.VarChar(255)
+  created_at  DateTime?     @default(now()) @db.Timestamp(6)
+  user_groups user_groups[]
+}
+
+enum status {
+  EMPTY
+  NOT_EMPTY
+}
